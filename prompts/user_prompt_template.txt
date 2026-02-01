@@ -1,0 +1,42 @@
+## Thread Context
+
+**Project:** {project_name}
+**Subject:** {subject}
+**Email Number:** {email_number} of {total_emails}
+
+## Previously Identified Open Issues
+
+{previous_issues}
+
+## Thread Summary So Far
+
+{thread_summary}
+
+## Current Email to Analyze
+
+---
+**From:** {from_name} <{from_email}>
+**Date:** {email_date}
+**To:** {to_emails}
+{cc_line}
+
+**Body:**
+{email_body}
+---
+
+## Your Task
+
+1. **Identify NEW Issues**: Analyze the current email for any NEW unresolved actions or emerging risks
+2. **Check Resolution Status**: Determine if any PREVIOUS issues listed above are now RESOLVED based on this email
+3. **Update Thread Summary**: Extract key points from this email to add to the ongoing thread summary
+
+## Constraints
+
+- Only flag issues a Director of Engineering needs to know
+- Ignore casual conversations and off-topic messages
+- Provide exact quotes as evidence (minimum 10 characters)
+- Be conservative - if uncertain, use lower confidence scores
+
+## Output Format
+
+Return ONLY valid JSON matching the schema (no markdown, no extra text).

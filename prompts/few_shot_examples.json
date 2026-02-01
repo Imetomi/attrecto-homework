@@ -1,0 +1,107 @@
+{
+  "examples": [
+    {
+      "description": "Example 1: Unresolved question that should be flagged",
+      "email": {
+        "from": "Gábor Horváth",
+        "date": "2025-06-02",
+        "body": "Hi Zsuzsa, Thanks, I've reviewed it. In point 3.2, the password strength criteria (min. 1 uppercase letter, 1 number) are fine, but I don't see any mention of the minimum password length. Should it be 8 characters, like in other modules?"
+      },
+      "previous_issues": [],
+      "expected_output": {
+        "new_issues": [
+          {
+            "issue_type": "UNRESOLVED_ACTION",
+            "severity": 4,
+            "title": "Password minimum length not specified",
+            "description": "Developer asked about minimum password length specification - no answer provided in thread",
+            "evidence_quote": "I don't see any mention of the minimum password length. Should it be 8 characters",
+            "confidence": 0.9
+          }
+        ],
+        "resolved_issues": [],
+        "thread_summary": {
+          "key_points": ["Password strength criteria being reviewed", "Minimum length unclear in spec"],
+          "participants_active": ["Gábor Horváth"],
+          "topics_discussed": ["password requirements", "specification review"]
+        }
+      }
+    },
+    {
+      "description": "Example 2: Emerging risk - scope not in estimate",
+      "email": {
+        "from": "István Nagy",
+        "date": "2025-06-02",
+        "body": "Hi Zsuzsa, The specification mentions 'Google SSO' as an option. Has this been confirmed with the client? Implementing this will require extra effort, as our current user management system doesn't support it natively; we'd need to pull in and configure a separate library. This wasn't included in the estimate."
+      },
+      "previous_issues": [],
+      "expected_output": {
+        "new_issues": [
+          {
+            "issue_type": "EMERGING_RISK",
+            "severity": 7,
+            "title": "Google SSO not in original estimate",
+            "description": "Google SSO mentioned in spec but wasn't included in original estimate, requires extra effort and separate library integration",
+            "evidence_quote": "This wasn't included in the estimate",
+            "confidence": 0.95
+          }
+        ],
+        "resolved_issues": [],
+        "thread_summary": {
+          "key_points": ["Google SSO requirement unclear", "Not in original estimate", "Requires additional library"],
+          "participants_active": ["István Nagy"],
+          "topics_discussed": ["Google SSO", "estimation", "scope"]
+        }
+      }
+    },
+    {
+      "description": "Example 3: Issue raised and then resolved - should NOT flag as open",
+      "email": {
+        "from": "István Nagy",
+        "date": "2025-06-30",
+        "body": "Sorry guys, this slipped my mind. Gábor, the test DB needs to be created manually beforehand; the hook itself doesn't do it. The create_test_db.sh script is in the scripts folder."
+      },
+      "previous_issues": [
+        {
+          "issue_id": "issue-123",
+          "title": "CI/CD pipeline setup failing for Gábor",
+          "description": "Junior developer unable to run tests locally due to pre-commit hook error",
+          "evidence_quote": "pre-commit hook folyton throws an error on the db:migrate command"
+        }
+      ],
+      "expected_output": {
+        "new_issues": [],
+        "resolved_issues": [
+          {
+            "issue_id": "issue-123",
+            "resolution_evidence": "the test DB needs to be created manually beforehand; the hook itself doesn't do it. The create_test_db.sh script is in the scripts folder",
+            "confidence": 0.9
+          }
+        ],
+        "thread_summary": {
+          "key_points": ["Solution provided for CI/CD issue", "Manual DB creation required", "Script location shared"],
+          "participants_active": ["István Nagy"],
+          "topics_discussed": ["CI/CD resolution", "test database setup"]
+        }
+      }
+    },
+    {
+      "description": "Example 4: Casual conversation - should NOT flag",
+      "email": {
+        "from": "Anna Kiss",
+        "date": "2025-06-30",
+        "body": "I spoke with the nearby restaurant about tomorrow's lunch. They have a pretty good weekly menu, option B is fried chicken with mashed potatoes. I think Pisti would love that, and menu A (tomato soup, cottage cheese pasta) would be good for the others. What do you think, should we go for it?"
+      },
+      "previous_issues": [],
+      "expected_output": {
+        "new_issues": [],
+        "resolved_issues": [],
+        "thread_summary": {
+          "key_points": ["Team lunch discussion"],
+          "participants_active": ["Anna Kiss"],
+          "topics_discussed": ["lunch plans"]
+        }
+      }
+    }
+  ]
+}
