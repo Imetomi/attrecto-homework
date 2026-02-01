@@ -649,20 +649,7 @@ While the current POC doesn't implement comprehensive metrics (as noted), a prod
    - Target: Issues with 0.9 confidence should be 90% accurate
    - Measurement: Track accuracy by confidence bucket
 
-**Implementation Approach:**
-```python
-# Add feedback mechanism to dashboard
-@app.post("/api/issues/{issue_id}/feedback")
-async def submit_feedback(issue_id: str, is_valid: bool):
-    """Director marks issue as valid or false positive"""
-    db.record_feedback(issue_id, is_valid)
-    
-# Weekly accuracy report
-def calculate_accuracy_metrics():
-    feedback = db.get_all_feedback()
-    precision = sum(f.is_valid for f in feedback) / len(feedback)
-    # Log to monitoring system
-```
+**Measurement:** Director feedback on each flagged issue (valid/false positive) tracked over time.
 
 #### B. **Operational Metrics**
 
@@ -703,19 +690,6 @@ def calculate_accuracy_metrics():
    - Target: Detect 80% of critical issues proactively
    - Measurement: Compare with post-mortem analysis
 
-**Dashboard Metrics Panel (Future Enhancement):**
-```
-┌─────────────────────────────────────────┐
-│         System Health Metrics           │
-├─────────────────────────────────────────┤
-│ Precision:           85% ↑              │
-│ Recall:              72% →              │
-│ Avg Processing Time: 2.3 min ↓          │
-│ API Success Rate:    97% ↑              │
-│ Monthly Cost:        $287 / $500        │
-│ Issues Detected:     156 this month     │
-└─────────────────────────────────────────┘
-```
 
 #### D. **Alerting Strategy**
 
@@ -785,110 +759,23 @@ The system's core value depends entirely on the LLM's ability to consistently an
 └────────┬────────┘
          │
          ▼
-  [Confidence      
-   Adjustment]
+   [Confidence      
+    Adjustment]
 ```
 
-**Implementation:**
-```python
-def validate_issue(issue: Issue, email: Email) -> float:
-    """
-    Second LLM call to validate issue detection.
-    Returns adjusted confidence score.
-    """
-    validation_prompt = f"""
-    You are a validator. An AI system detected the following issue:
-    
-    Issue: {issue.title}
-    Evidence: "{issue.evidence_quote}"
-    
-    Email context: {email.body}
-    
-    Question: Is this issue clearly stated in the email?
-    - YES: The evidence directly supports the issue
-    - MAYBE: The issue is implied but not explicit
-    - NO: The issue is not supported by the evidence
-    
-    Return: YES, MAYBE, or NO
-    """
-    
-    response = llm.call(validation_prompt)
-    
-    if response == "YES":
-        return issue.confidence  # Keep original
-    elif response == "MAYBE":
-        return issue.confidence * 0.7  # Reduce confidence
-    else:
-        return 0.0  # Reject issue
-```
-
-**Benefits:**
-- Reduces false positives by 40-60%
-- Adds cost (~$0.01 per issue) but improves trust
-- Can use cheaper model (GPT-3.5) for validation
+**Concept:**
+- Second LLM call validates each detected issue
+- Validator checks if evidence truly supports the issue
+- Returns YES (keep), MAYBE (reduce confidence), or NO (reject)
+- Reduces false positives by 40-60% at minimal cost (~$0.01 per issue)
 
 #### 2. **Regression Testing Suite**
 
-**Approach:** Maintain a curated set of test emails with known ground truth.
-
-```python
-# tests/test_issue_detection.py
-def test_unresolved_question_detection():
-    """Test that system detects unanswered questions."""
-    email = load_test_email("unresolved_question.txt")
-    
-    issues = analyzer.analyze_thread(email)
-    
-    assert len(issues) == 1
-    assert issues[0].issue_type == IssueType.UNRESOLVED_ACTION
-    assert "password length" in issues[0].evidence_quote.lower()
-    assert issues[0].confidence >= 0.8
-
-def test_no_false_positive_on_casual_chat():
-    """Test that system ignores casual conversation."""
-    email = load_test_email("lunch_plans.txt")
-    
-    issues = analyzer.analyze_thread(email)
-    
-    assert len(issues) == 0  # No issues in casual chat
-```
-
-**Test Coverage:**
-- 20-30 real email examples with labeled ground truth
-- Cover edge cases: ambiguous language, sarcasm, context-dependent
-- Run on every deployment to detect prompt drift
-
-**CI/CD Integration:**
-```bash
-# Run before deployment
-pytest tests/test_issue_detection.py --cov=src
-
-# Alert if accuracy drops below threshold
-if [ $ACCURACY -lt 80 ]; then
-    echo "ALERT: Accuracy dropped to $ACCURACY%"
-    exit 1
-fi
-```
+Maintain 20-30 curated test emails with known ground truth (labeled issues). Run automated tests on every deployment to detect prompt drift or model changes. Alert if accuracy drops below 80%.
 
 #### 3. **Model Version Pinning & Monitoring**
 
-**Approach:** Pin to specific model version, monitor for changes.
-
-```python
-# config.py
-AZURE_OPENAI_MODEL_VERSION = "gpt-4-0613"  # Pin specific version
-
-# Monitor for model updates
-def check_model_version():
-    current_version = azure_client.get_model_version()
-    if current_version != AZURE_OPENAI_MODEL_VERSION:
-        alert("Model version changed! Review required.")
-```
-
-**Deployment Strategy:**
-- Test new model versions in staging environment
-- Run regression suite on new version
-- Gradual rollout: 10% → 50% → 100% of traffic
+Pin to specific Azure OpenAI model versions and test new versions in staging before production rollout to prevent unexpected behavior changes.
 
 #### 4. **Confidence-Based Routing**
 
@@ -899,9 +786,9 @@ def check_model_version():
 │  Issue Detected │
 └────────┬────────┘
          │
-    ┌────┴────┐
+    ┌────┴─────┐
     │Confidence│
-    └────┬────┘
+    └────┬─────┘
          │
     ┌────┴────────────────┐
     │                     │
