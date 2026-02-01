@@ -110,10 +110,10 @@ To scale this system for enterprise-level email volumes (thousands of threads, m
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                    Message Queue (Kafka)                  │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐│
-│  │ Thread 1 │  │ Thread 2 │  │ Thread 3 │  │ Thread N ││
-│  └──────────┘  └──────────┘  └──────────┘  └──────────┘│
+│                    Message Queue (Kafka)                 │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
+│  │ Thread 1 │  │ Thread 2 │  │ Thread 3 │  │ Thread N │  │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘  │
 └────────────────────┬─────────────────────────────────────┘
                      │
         ┌────────────┴────────────┐
@@ -215,10 +215,10 @@ The system uses a **sequential, context-aware** approach to minimize hallucinati
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    For Each Email Thread                 │
+│                    For Each Email Thread                │
 └─────────────────────────────────────────────────────────┘
-                            │
-                            ▼
+                        │
+                        ▼
         ┌───────────────────────────────────┐
         │  Step 1: Initialize Context       │
         │  - Load existing projects         │
@@ -283,7 +283,7 @@ The system uses a **sequential, context-aware** approach to minimize hallucinati
         └───────────────┬───────────────────┘
                         │
                         ▼
-                  (Repeat for each email)
+             (Repeat for each email)
                         │
                         ▼
         ┌───────────────────────────────────┐
