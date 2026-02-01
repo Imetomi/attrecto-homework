@@ -23,13 +23,43 @@ class IssueStatus(str, Enum):
     MONITORING = "MONITORING"
 
 
+class Colleague(BaseModel):
+    """Represents a colleague/team member."""
+    name: str
+    email: str
+    role: str
+
+
+class Project(BaseModel):
+    """Represents a project that can be mentioned in email threads."""
+    project_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    project_name: str = Field(min_length=1, max_length=200)
+    description: str = ""
+    related_keywords: List[str] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
+
+
+class ProjectMention(BaseModel):
+    """Schema for project mention detected by AI."""
+    project_name: str
+    keywords: List[str] = Field(default_factory=list)
+    confidence: float = Field(ge=0.0, le=1.0)
+
+
 class Email(BaseModel):
     """Represents a single email in a thread."""
     from_email: str
     from_name: str
     to_emails: List[str]
     cc_emails: List[str] = Field(default_factory=list)
-    date: datetime
+    date: datetime  # Dummy date, AI extracts the real one
+    date_raw: str = ""  # Raw date string from email
     subject: str
     body: str
 
@@ -83,6 +113,7 @@ class Issue(BaseModel):
     """Represents an issue requiring director attention."""
     issue_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     thread_id: str = ""
+    project_id: str = ""  # Reference to the project this issue belongs to
     issue_type: IssueType
     status: IssueStatus = IssueStatus.OPEN
     severity: int = Field(ge=1, le=10, description="Severity from 1-10")
@@ -92,7 +123,6 @@ class Issue(BaseModel):
     email_date: datetime
     email_author: str
     email_author_email: str = ""  # Email address of the person who raised the issue
-    project_name: str = ""
     subject: str = ""
     participants: List[str] = Field(default_factory=list)  # All people involved in thread
     contact_person: str = ""  # Primary person to contact about this issue
@@ -172,6 +202,7 @@ class NewIssueData(BaseModel):
     description: str
     evidence_quote: str
     confidence: float = Field(ge=0.0, le=1.0)
+    email_date: str  # AI returns date in ISO format YYYY-MM-DD HH:MM:SS
 
 
 class ResolvedIssueData(BaseModel):
@@ -189,6 +220,7 @@ class AIAnalysisResponse(BaseModel):
     new_issues: List[NewIssueData] = Field(default_factory=list)
     resolved_issues: List[ResolvedIssueData] = Field(default_factory=list)
     thread_summary: ThreadSummary = Field(default_factory=ThreadSummary)
+    project_mentions: List[ProjectMention] = Field(default_factory=list)
 
     class Config:
         extra = 'forbid'  # Reject any extra fields from AI

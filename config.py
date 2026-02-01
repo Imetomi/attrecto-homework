@@ -32,7 +32,8 @@ MIN_DAYS_FOR_UNRESOLVED = int(os.getenv("MIN_DAYS_FOR_UNRESOLVED", "7"))
 PROJECT_ROOT = Path(__file__).parent
 DATA_DIR = PROJECT_ROOT / "data"
 PROMPTS_DIR = PROJECT_ROOT / "prompts"
-DB_PATH = PROJECT_ROOT / "portfolio_data.json"
+DB_PATH = DATA_DIR / "portfolio_data.json"
+OUTPUT_DIR = DATA_DIR / "output"
 
 # Prompt File Paths
 SYSTEM_PROMPT_PATH = PROMPTS_DIR / "system_prompt.txt"

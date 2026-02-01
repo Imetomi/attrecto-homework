@@ -68,8 +68,8 @@ htmlcov/
 .nox/
 
 # Output files (optional - uncomment if you don't want to commit reports)
-# *.json
-# portfolio_health_report.json
+# data/portfolio_data.json
+# data/output/portfolio_health_report.json
 # *.log
 
 # Azure specific

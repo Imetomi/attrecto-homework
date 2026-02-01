@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Health Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Prevent charts from growing indefinitely */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            max-height: 300px;
+            overflow: hidden;
+        }
+        .chart-container canvas {
+            max-height: 300px !important;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.2s ease-in;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: #ffffff;
+            border-radius: 12px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        danger: '#ef4444',
+                        warning: '#f59e0b',
+                        success: '#10b981',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white -sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <img src="/static/media/attrecto-logo.png" alt="Attrecto Logo" class="h-10">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Portfolio Health Dashboard</h1>
+                        <p class="text-sm text-gray-500 mt-1">Director of Engineering - Quarterly Business Review</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                        Live
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Issues -->
+            <div class="bg-white rounded-lg  p-6 border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Issues</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2" id="total-issues">-</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-sm text-gray-500" id="total-projects">-</span>
+                </div>
+            </div>
+
+            <!-- Open Issues -->
+            <div class="bg-white rounded-lg  p-6 border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Open Issues</p>
+                        <p class="text-3xl font-bold text-red-600 mt-2" id="open-issues">-</p>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-sm text-gray-500">Requires attention</span>
+                </div>
+            </div>
+
+            <!-- Resolved Issues -->
+            <div class="bg-white rounded-lg  p-6 border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Resolved</p>
+                        <p class="text-3xl font-bold text-green-600 mt-2" id="resolved-issues">-</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-sm text-gray-500" id="resolution-rate">-</span>
+                </div>
+            </div>
+
+            <!-- Threads Analyzed -->
+            <div class="bg-white rounded-lg  p-6 border border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Threads</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-2" id="total-threads">-</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-sm text-gray-500" id="emails-processed">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Severity Breakdown -->
+            <div class="bg-white rounded-lg  p-6 border border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Issues by Severity</h3>
+                <div class="chart-container">
+                    <canvas id="severityChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Type Breakdown -->
+            <div class="bg-white rounded-lg  p-6 border border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Issues by Type</h3>
+                <div class="chart-container">
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Open Issues Table -->
+        <div class="bg-white rounded-lg  border border-gray-200 mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Open Issues (Priority Order)</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Days</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="open-issues-table">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Resolved Issues -->
+        <div class="bg-white rounded-lg  border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Recently Resolved Issues</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resolution</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="resolved-issues-table">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Issue Detail Modal -->
+    <div id="issueModal" class="modal">
+        <div class="modal-content">
+            <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-xl">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <h2 class="text-xl font-bold text-gray-900" id="modal-title"></h2>
+                        <div class="flex items-center gap-2 mt-2" id="modal-badges"></div>
+                    </div>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors ml-4">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="px-6 py-5 space-y-5">
+                <!-- Description -->
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Description</h3>
+                    <p class="text-gray-900 leading-relaxed" id="modal-description"></p>
+                </div>
+                
+                <!-- Evidence -->
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Evidence</h3>
+                    <div class="bg-gray-50 border-l-4 border-blue-500 p-4 rounded">
+                        <p class="text-gray-700 italic" id="modal-evidence"></p>
+                    </div>
+                </div>
+                
+                <!-- Project & Contact Info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Project</h3>
+                        <p class="text-gray-900" id="modal-project"></p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Contact Person</h3>
+                        <p class="text-gray-900 font-medium" id="modal-contact-name"></p>
+                        <p class="text-sm text-gray-600" id="modal-contact-email"></p>
+                    </div>
+                </div>
+                
+                <!-- Email Info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Email Author</h3>
+                        <p class="text-gray-900" id="modal-author"></p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Email Date</h3>
+                        <p class="text-gray-900" id="modal-date"></p>
+                    </div>
+                </div>
+                
+                <!-- Metrics -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Metrics</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-gray-900" id="modal-severity"></p>
+                            <p class="text-xs text-gray-600 mt-1">Severity</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-gray-900" id="modal-confidence"></p>
+                            <p class="text-xs text-gray-600 mt-1">Confidence</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-2xl font-bold text-gray-900" id="modal-days"></p>
+                            <p class="text-xs text-gray-600 mt-1">Days Open</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Subject -->
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-2">Email Subject</h3>
+                    <p class="text-gray-600 text-sm" id="modal-subject"></p>
+                </div>
+            </div>
+            
+            <div class="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 rounded-b-xl">
+                <button onclick="closeModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

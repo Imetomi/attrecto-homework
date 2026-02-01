@@ -1,8 +1,15 @@
 ## Thread Context
 
-**Project:** {project_name}
 **Subject:** {subject}
 **Email Number:** {email_number} of {total_emails}
+
+## Team Members Context
+
+{colleagues_context}
+
+## Existing Projects
+
+{existing_projects}
 
 ## Previously Identified Open Issues
 
@@ -26,9 +33,11 @@
 
 ## Your Task
 
-1. **Identify NEW Issues**: Analyze the current email for any NEW unresolved actions or emerging risks
-2. **Check Resolution Status**: Determine if any PREVIOUS issues listed above are now RESOLVED based on this email
-3. **Update Thread Summary**: Extract key points from this email to add to the ongoing thread summary
+1. **Detect Project Mentions**: Identify any projects mentioned in this email. If a project name matches an existing project (by name or keywords), reference it. Otherwise, suggest a new project name with relevant keywords.
+2. **Identify NEW Issues**: Analyze the current email for any NEW unresolved actions or emerging risks
+3. **Check Resolution Status**: Determine if any PREVIOUS issues listed above are now RESOLVED based on this email
+4. **Update Thread Summary**: Extract key points from this email to add to the ongoing thread summary
+5. **Use Team Context**: When determining contact persons, prefer using names and emails from the Team Members list above
 
 ## Constraints
 

@@ -64,13 +64,6 @@ uv run python main.py
 uv run analyze
 ```
 
-## Why UV?
-
-- **Fast**: 10-100x faster than pip
-- **Deterministic**: Lock file ensures reproducible builds
-- **Simple**: No need to manually create virtual environments
-- **Modern**: Rust-based, actively developed
-
 ## Development
 
 ```bash
@@ -96,12 +89,31 @@ attrecto-homework/
 │   ├── llm_gateway.py      # Rate-limited Azure OpenAI client
 │   ├── ai_analyzer.py      # Core analysis engine
 │   ├── email_parser.py     # Email file parser
+│   ├── colleagues_parser.py # Team members parser
 │   ├── database.py         # TinyDB wrapper
 │   └── report_generator.py # Report generation
 ├── prompts/                 # AI prompts
-├── data/                    # Email data files
+├── data/                    # Email data files and Colleagues.txt
+├── dashboard/              # Web dashboard
+│   ├── app.py             # FastAPI application
+│   ├── templates/         # HTML templates
+│   └── static/            # CSS/JS assets
 ├── config.py               # Configuration
 ├── main.py                 # Entry point
 ├── pyproject.toml          # UV/Python project config
 └── .env                    # Your secrets (git-ignored)
 ```
+
+## Running the Dashboard
+
+To view the portfolio health data in a web interface:
+
+```bash
+# Start the dashboard server
+uv run python dashboard/app.py
+
+# Or use the run script
+./run_dashboard.sh
+```
+
+Then open your browser to http://localhost:8000

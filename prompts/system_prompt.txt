@@ -53,6 +53,13 @@ You MUST respond with valid JSON matching this exact structure:
 
 ```json
 {
+  "project_mentions": [
+    {
+      "project_name": "name of the project mentioned",
+      "keywords": ["keyword1", "keyword2"],
+      "confidence": 0.0-1.0
+    }
+  ],
   "new_issues": [
     {
       "issue_type": "UNRESOLVED_ACTION or EMERGING_RISK",
@@ -60,7 +67,8 @@ You MUST respond with valid JSON matching this exact structure:
       "title": "brief title (5-50 chars)",
       "description": "detailed description",
       "evidence_quote": "exact quote from email (min 10 chars)",
-      "confidence": 0.0-1.0
+      "confidence": 0.0-1.0,
+      "email_date": "YYYY-MM-DD HH:MM:SS"
     }
   ],
   "resolved_issues": [
@@ -77,6 +85,25 @@ You MUST respond with valid JSON matching this exact structure:
   }
 }
 ```
+
+## Project Detection
+
+When identifying projects:
+- Look for explicit project names mentioned in the email (e.g., "Project Phoenix", "KisJózsi webshop")
+- Extract relevant keywords that could help match this project in future emails
+- Check against the "Existing Projects" list - if a match is found by name or keywords, use that project name
+- If no match exists, suggest a descriptive project name
+- Use high confidence (0.8+) only for explicitly named projects
+
+## Date Extraction
+
+For each new issue:
+- Extract the email date from the "Date:" field in the current email
+- Return it in standardized format: YYYY-MM-DD HH:MM:SS
+- If the date has timezone info (e.g., +0200), remove it and just return the local time
+- Examples:
+  - "Mon, 02 Jun 2025 10:00:00 +0200" → "2025-06-02 10:00:00"
+  - "2025.07.02 16:20" → "2025-07-02 16:20:00"
 
 ## Severity Scoring Guide
 
